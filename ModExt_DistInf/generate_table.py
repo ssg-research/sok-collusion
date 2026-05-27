@@ -1,5 +1,5 @@
 """
-Generate the LaTeX table tab:modextDIA from collusion experiment CSVs.
+Generate the LaTeX for the paper's Table 6 (§5.3) from collusion experiment CSVs.
 
 Reads three result files written by modext_distinf.py:
   - collusion_results_045.csv     (CelebA, ratio 0.45/0.55)
