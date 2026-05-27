@@ -2,9 +2,8 @@
 # Smoke test for Pois -> ModExt: exercises every pipeline branch on CIFAR10
 # at a single (poison_rate, query_size) tuple and a baseline, with --epochs 5
 # instead of the default 200. Verifies the pipeline executes end-to-end and
-# writes rows to pois_modext_smoke.csv. NOT a reproduction of paper Table
-# tab:trteeval -- the numbers will be much noisier and lower than the full
-# 200-epoch runs.
+# writes rows to pois_modext_smoke.csv. NOT a reproduction of paper Table 5
+# -- the numbers will be much noisier and lower than the full 200-epoch runs.
 #
 # Cells exercised:
 #   1. Clean target training (poisoned_portion=0)  + extraction at 2500 queries
@@ -22,6 +21,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
+
+# Stream progress (dataset extraction, per-epoch logs) live through tee/screen.
+export PYTHONUNBUFFERED=1
 
 mkdir -p "${SCRIPT_DIR}/results"
 SMOKE_OUTPUT="${SCRIPT_DIR}/results/pois_modext_smoke.csv"

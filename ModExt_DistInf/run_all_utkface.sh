@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# UTKFace, both ratio pairs. Reproduces both UTKFACE columns of Table
-# tab:modextDIA for all three Settings across 5 seeds.
+# UTKFace, both ratio pairs. Reproduces both UTKFACE columns of Table 6
+# (paper §5.3) for all three Settings across 5 seeds.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
+
+# Stream progress (dataset extraction, per-epoch logs) live through tee/screen.
+export PYTHONUNBUFFERED=1
 
 for exp_id in 0 1 2 3 4; do
     for setting in 1 2 3; do

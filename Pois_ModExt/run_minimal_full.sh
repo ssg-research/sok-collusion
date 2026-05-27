@@ -20,6 +20,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
+# Stream progress (dataset extraction, per-epoch logs) live through tee/screen.
+export PYTHONUNBUFFERED=1
+
 mkdir -p "${SCRIPT_DIR}/results" "${SCRIPT_DIR}/logs"
 OUTPUT="${SCRIPT_DIR}/results/pois_modext_minimal.csv"
 TS="$(date -u +%Y%m%dT%H%M%SZ)"

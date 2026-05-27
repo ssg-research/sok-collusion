@@ -1,5 +1,5 @@
 """
-Poisoning x model extraction collusion experiment (paper Section sec:trteeval).
+Poisoning x model extraction collusion experiment (paper §5.2, Table 5).
 
 For a fixed (dataset, exp_id), the script:
 
@@ -139,7 +139,7 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default="cifar10",
         help="Dataset name passed to amulet.utils.load_data. Tested with "
-        "'cifar10' and 'cifar100' for paper Table tab:trteeval.",
+        "'cifar10' and 'cifar100' for paper Table 5 (§5.2).",
     )
 
     # Target / surrogate architecture (single arch in this experiment).
