@@ -4,9 +4,9 @@ Three independent experiments validating the paper's collusion conjectures. Targ
 
 | Part | Paper § | Code dir | Result |
 |------|---------|----------|--------|
-| A | sec:trteeval | `Pois_ModExt/`           | **Negative**: poisoning reduces extraction. |
-| B | sec:teeval2  | `ModExt_DistInf/`        | Positive: extraction-based shadows improve DistInf. |
-| C | sec:teeval3  | `DtRecon_MemAttDistInf/` | Positive across MIA, AIA, DIA. |
+| A | §5.2, Table 5    | `Pois_ModExt/`           | **Negative**: poisoning reduces extraction. |
+| B | §5.3, Table 6    | `ModExt_DistInf/`        | Positive: extraction-based shadows improve DistInf. |
+| C | §5.4, prose-only | `DtRecon_MemAttDistInf/` | Positive across MIA, AIA, DIA. |
 
 One `pyproject.toml`, one `uv sync`. The three parts share no state and run in any order.
 
@@ -29,7 +29,7 @@ artifact/
 │   ├── run_experiments_045.sh                CelebA α=0.45/0.55.
 │   ├── run_experiments_0475.sh               CelebA α=0.475/0.525.
 │   ├── run_experiments_utkface.sh            UTKFace, both α pairs.
-│   ├── generate_collusion_table.py           Renders LaTeX Table tab:modextDIA.
+│   ├── generate_collusion_table.py           Renders LaTeX for Table 6.
 │   └── check_{celeba,utkface}_*.py           Attribute / subsample sanity checks.
 └── DtRecon_MemAttDistInf/                    Part C.
     └── <TODO: co-author to populate>
@@ -50,13 +50,13 @@ Part C may add deps for GIFD; the co-author will update `pyproject.toml` before 
 
 ## Part A · Train-Test Collusion: Poisoning → Model Extraction
 
-**TL;DR.** `bash Pois_ModExt/run_all.sh` reproduces Table `tab:trteeval`, ~52 h on one A100. Run `bash Pois_ModExt/run_smoke_test.sh` first (~3 min) to confirm the setup works.
+**TL;DR.** `bash Pois_ModExt/run_all.sh` reproduces §5.2, Table 5, ~52 h on one A100. Run `bash Pois_ModExt/run_smoke_test.sh` first (~3 min) to confirm the setup works.
 
 ### A.1 Claims
 
 > **Main claim (A).** On CIFAR10 and CIFAR100, for every non-zero poisoning rate {5%, 10%, 15%, 20%} and every query budget {2500, 6250, 12500, 25000}, surrogate accuracy and fidelity are at or below the unpoisoned baseline (within std). Poisoning reduces extraction effectiveness.
 
-1. **A-C1.** Every cell on CIFAR100 is below baseline by >1 std (red in paper Table `tab:trteeval`).
+1. **A-C1.** Every cell on CIFAR100 is below baseline by >1 std (red in paper Table 5).
 2. **A-C2.** On CIFAR10, the 2500-query column is within the baseline std band (orange); larger budgets are below (red).
 3. **A-C3.** The poisoned target's trigger-test accuracy exceeds 90% at every non-zero poison rate, confirming BadNets implanted the backdoor.
 
@@ -88,7 +88,7 @@ bash run_smoke_test.sh        # ~3 min: confirms the setup works.
 bash run_minimal_full.sh      # ~25 min: may hint at trends, too short to reproduce the table.
 ```
 
-### A.4 Full reproduction (paper Table `tab:trteeval`)
+### A.4 Full reproduction (paper §5.2, Table 5)
 
 ```bash
 cd Pois_ModExt
@@ -99,7 +99,7 @@ Iterates `dataset ∈ {cifar10, cifar100} × exp_id ∈ {0, 1, 2} × poison ∈ 
 
 ### A.5 Comparing to the paper
 
-Reference cells from Table `tab:trteeval`, mean ± std over 3 seeds, in %. CIFAR100 non-baseline cells are red (below baseline − std); CIFAR10 non-baseline cells are red except the 2500-query column, which is orange (within std). Reproduced means may drift 1–2 pp from cuDNN non-determinism.
+Reference cells from Table 5, mean ± std over 3 seeds, in %. CIFAR100 non-baseline cells are red (below baseline − std); CIFAR10 non-baseline cells are red except the 2500-query column, which is orange (within std). Reproduced means may drift 1–2 pp from cuDNN non-determinism.
 
 **CIFAR10** (acc. / fid.; trigger-test accuracy exceeds 90% at every non-zero poison rate, confirming A-C3):
 
@@ -147,7 +147,7 @@ Reference cells from Table `tab:trteeval`, mean ± std over 3 seeds, in %. CIFAR
 
 ## Part B · Test-Time Collusion: Model Extraction → Distribution Inference
 
-**TL;DR.** `bash ModExt_DistInf/run_experiments_{045,0475,utkface}.sh` reproduce Table `tab:modextDIA`, ~12 days on one A100 or ~5.7 days across three GPUs. Run `bash ModExt_DistInf/run_smoke_test.sh` first (~10 min) to confirm the setup works.
+**TL;DR.** `bash ModExt_DistInf/run_experiments_{045,0475,utkface}.sh` reproduce §5.3, Table 6, ~12 days on one A100 or ~5.7 days across three GPUs. Run `bash ModExt_DistInf/run_smoke_test.sh` first (~10 min) to confirm the setup works.
 
 ### B.1 Claims
 
@@ -196,7 +196,7 @@ bash run_smoke_test.sh        # ~10 min: confirms the setup works.
 bash run_minimal_full.sh      # ~30–60 min: may hint at trends, too short to reproduce the table.
 ```
 
-### B.4 Full reproduction (paper Table `tab:modextDIA`)
+### B.4 Full reproduction (paper §5.3, Table 6)
 
 ```bash
 cd ModExt_DistInf
@@ -213,7 +213,7 @@ uv run python generate_collusion_table.py --output table.tex   # --metric auc_sc
 
 ### B.5 Comparing to the paper
 
-Reference cells from Table `tab:modextDIA`, mean ± std over 5 seeds, in %. Bold = above baseline + std (green in paper). Reproduced means may drift by 1–3 pp from cuDNN non-determinism; the qualitative pattern (six green cells) is robust.
+Reference cells from Table 6, mean ± std over 5 seeds, in %. Bold = above baseline + std (green in paper). Reproduced means may drift by 1–3 pp from cuDNN non-determinism; the qualitative pattern (six green cells) is robust.
 
 | Setting    | CELEBA α=0.45/0.55  | CELEBA α=0.475/0.525 | UTKFACE α=0.45/0.55 | UTKFACE α=0.475/0.525 |
 |------------|---------------------|----------------------|---------------------|-----------------------|
@@ -237,9 +237,9 @@ Reference cells from Table `tab:modextDIA`, mean ± std over 5 seeds, in %. Bold
 
 ## Part C · Test-Time Collusion: Data Reconstruction → {MIA, AIA, DIA}
 
-**TL;DR.** *(TODO: co-author.)* Scripts in `DtRecon_MemAttDistInf/` reproduce Tables `tab:teeval_mia`, `tab:teeval_aia`, `tab:teeval_dia`.
+**TL;DR.** *(TODO: co-author.)* Scripts in `DtRecon_MemAttDistInf/` reproduce the §5.4 results (reported as prose in the paper, no numbered tables).
 
-> **Status:** §C.1 and §C.5 are populated from paper Tables `tab:teeval_mia`, `tab:teeval_aia`, `tab:teeval_dia`. Items marked *(TODO)* are for the Part C owner.
+> **Status:** §C.1 and §C.5 are populated from the §5.4 prose results. Items marked *(TODO)* are for the Part C owner.
 
 ### C.1 Claims
 
@@ -261,7 +261,7 @@ Shared `uv sync` covers torch and amuletml. *(TODO: co-author to document the GI
 
 Datasets: CIFAR{10,100} (MIA), CelebA + UTKFace (AIA, DIA). Same licenses as Parts A and B.
 
-Task / sensitive-attribute pairings (§teeval3):
+Task / sensitive-attribute pairings (§5.4):
 
 - AIA, CelebA: target=`Smiling`, sensitive=`Male`.
 - AIA, UTKFace: target=`gender`, sensitive=`race`.
@@ -287,7 +287,7 @@ cd DtRecon_MemAttDistInf
 bash run_smoke_test.sh
 ```
 
-### C.4 Full reproduction (paper Tables `tab:teeval_mia`, `tab:teeval_aia`, `tab:teeval_dia`)
+### C.4 Full reproduction (paper §5.4)
 
 *(TODO: co-author. Expected layout, mirroring Parts A and B:)*
 
@@ -306,7 +306,7 @@ The three reproduction scripts should be independent so they can run on separate
 
 ### C.5 Comparing to the paper
 
-Bold = above baseline + std (green in paper). AIA and DIA use 5-run means ± std; MIA reproduces single-run TPRs from the prose of §teeval3. *(Co-author to confirm which MIA table is camera-ready; the second commented-out table shows monotone 5-run means with std.)*
+Bold = above baseline + std (green in paper). AIA and DIA use 5-run means ± std; MIA reproduces single-run TPRs from the §5.4 prose. *(Co-author to confirm which MIA numbers are camera-ready; an alternative 5-run mean ± std version exists in the paper source.)*
 
 **DataRecon → MIA** (TPR@FPR=0.01, %):
 
