@@ -1,7 +1,7 @@
 """
 Generate the LaTeX table tab:modextDIA from collusion experiment CSVs.
 
-Reads three result files written by run_dist_inference_collusion.py:
+Reads three result files written by modext_distinf.py:
   - collusion_results_045.csv     (CelebA, ratio 0.45/0.55)
   - collusion_results_0475.csv    (CelebA, ratio 0.475/0.525)
   - collusion_results_utkface.csv (UTKFace, both ratios)

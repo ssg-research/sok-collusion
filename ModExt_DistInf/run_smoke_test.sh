@@ -15,7 +15,7 @@ cd "${SCRIPT_DIR}"
 
 for setting in 1 2 3; do
     echo "=== smoke setting=${setting} ==="
-    uv run python run_dist_inference_collusion.py \
+    uv run python modext_distinf.py \
         --setting "${setting}" \
         --exp_id 0 \
         --dataset utkface \

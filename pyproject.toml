@@ -7,9 +7,17 @@ requires-python = "~=3.11.0"
 
 dependencies = [
     # Pinned strictly: this is the exact release used to produce the paper's
-    # numbers. All other deps (torch, numpy, pandas, scikit-learn, ...) are
-    # transitive through amuletml and locked in uv.lock.
+    # numbers. Numpy, pandas, scikit-learn, etc. are transitive through
+    # amuletml and locked in uv.lock.
     "amuletml==0.5.1",
+    # amuletml itself declares only `torch>=2.3.0`, which lets uv resolve to
+    # the latest release (torch 2.12+ as of writing). Those wheels target
+    # CUDA 13 and refuse to initialise on any driver older than ~570. We
+    # constrain to the 2.5.x line, whose default wheels target CUDA 12.4 and
+    # run on any driver >= 525, covering the A100 cluster we developed on
+    # and most reviewer GPUs from the last three years.
+    "torch>=2.5.0,<2.6.0",
+    "torchvision>=0.20.0,<0.21.0",
 ]
 
 [tool.uv]

@@ -18,12 +18,11 @@ artifact/
 ├── pyproject.toml                            uv project pinning amuletml==0.5.1.
 ├── .python-version                           Python 3.11.
 ├── Pois_ModExt/                              Part A. Poisoning -> Model Extraction.
-│   └── poisoning_modext/
-│       ├── pois_modext.py                    Main pipeline (one cell).
-│       ├── run_smoke_test.sh                 ~5–15 min spot check on one GPU.
-│       └── run_all.sh                        Full reproduction sweep.
+│   ├── pois_modext.py                        Main pipeline (one cell).
+│   ├── run_smoke_test.sh                     ~5–15 min spot check on one GPU.
+│   └── run_all.sh                            Full reproduction sweep.
 ├── ModExt_DistInf/                           Part B. ModExt -> DistInf.
-│   ├── run_dist_inference_collusion.py       Main pipeline (one cell).
+│   ├── modext_distinf.py                     Main pipeline (one cell).
 │   ├── run_smoke_test.sh                     ~10 min UTKFace spot check.
 │   ├── run_experiments_045.sh                CelebA α=0.45/0.55 (full).
 │   ├── run_experiments_0475.sh               CelebA α=0.475/0.525 (full).
@@ -34,7 +33,7 @@ artifact/
     └── <TODO: co-author to populate>         See §C.4 for the expected layout.
 ```
 
-Pipeline scripts create three working subdirectories (`data/`, `saved_models/` or `models/`, `logs/`) on first run, plus a result CSV per script. These are all gitignored. The reference numbers from our original runs are reproduced in §§A.5, B.5, and C.5 of this README; the underlying CSVs are not redistributed.
+Pipeline scripts create four working subdirectories (`data/`, `models/`, `logs/`, `results/`) on first run. These are all gitignored. The reference numbers from our original runs are reproduced in §§A.5, B.5, and C.5 of this README; the underlying CSVs are not redistributed.
 
 ## Shared setup
 
@@ -103,11 +102,11 @@ The Part A result CSVs have no `timestamp` column, so we cannot reconstruct hist
 ### A.3 Smoke test (recommended first)
 
 ```bash
-cd Pois_ModExt/poisoning_modext
+cd Pois_ModExt
 bash run_smoke_test.sh
 ```
 
-The smoke test runs two cells on CIFAR10 (`poison ∈ {0.0, 0.1}`, `query_size=0.1`, `exp_id=0`, `epochs=5`) and writes two rows to `pois_modext_smoke.csv`. It is not a paper reproduction. It verifies:
+The smoke test runs two cells on CIFAR10 (`poison ∈ {0.0, 0.1}`, `query_size=0.1`, `exp_id=0`, `epochs=5`) and writes two rows to `results/pois_modext_smoke.csv`. It is not a paper reproduction. It verifies:
 
 1. `amuletml==0.5.1` imports cleanly.
 2. CIFAR10 downloads and processes.
@@ -115,18 +114,18 @@ The smoke test runs two cells on CIFAR10 (`poison ∈ {0.0, 0.1}`, `query_size=0
 4. The KnockoffNets-style extraction branch runs.
 5. Evaluation populates `target_acc_test`, `target_acc_poisoned`, `stolen_acc_test`, `fidelity`, `correct_fidelity`, `stolen_acc_poisoned`.
 
-The smoke CSV is written to `pois_modext_smoke.csv`, a separate path from the full-reproduction output (`pois_modext_results_{dataset}.csv`).
+The smoke CSV is written to `results/pois_modext_smoke.csv`, separate from the full-reproduction output (`results/pois_modext_results_{dataset}.csv`).
 
 ### A.4 Full reproduction (paper Table `tab:trteeval`)
 
 ```bash
-cd Pois_ModExt/poisoning_modext
+cd Pois_ModExt
 bash run_all.sh
 ```
 
-The script iterates `dataset ∈ {cifar10, cifar100} × exp_id ∈ {0, 1, 2} × poison ∈ {0.0, 0.05, 0.1, 0.15, 0.2} × query_size ∈ {1, 0.5, 0.25, 0.1}` (3 seeds, matching the standard deviations in the paper). Output is appended to `pois_modext_results_{dataset}.csv`, written next to the script. If the file already exists from a prior partial run, new rows append; delete the file first if you want a clean CSV.
+The script iterates `dataset ∈ {cifar10, cifar100} × exp_id ∈ {0, 1, 2} × poison ∈ {0.0, 0.05, 0.1, 0.15, 0.2} × query_size ∈ {1, 0.5, 0.25, 0.1}` (3 seeds, matching the standard deviations in the paper). Output is appended to `results/pois_modext_results_{dataset}.csv`. If the file already exists from a prior partial run, new rows append; delete the file first if you want a clean CSV.
 
-Trained targets and surrogates are cached under `saved_models/` and re-used across cells whose `(dataset, poison_rate, exp_id)` matches. An interrupted run resumes by re-invoking the script: completed cells skip retraining via the on-disk checkpoint cache.
+Trained targets and surrogates are cached under `models/` and re-used across cells whose `(dataset, poison_rate, exp_id)` matches. An interrupted run resumes by re-invoking the script: completed cells skip retraining via the on-disk checkpoint cache.
 
 > **Note on poisoning-rate notation.** The argument `--poisoned_portion` and the script's internal rates {0.05, 0.10, 0.15, 0.20} are fractions of the target training set, i.e. 5%, 10%, 15%, 20%. The paper's Table `tab:trteeval` renders these headers as `0.05%`, `0.1%`, etc.; treat the paper headers as the fractions, not as actual percentages.
 
@@ -316,7 +315,7 @@ Part B reproduces successfully if, for each column, the reproduced Cross-Arch an
 | Same-Arch row                  | `setting=3`                  | `_train_population` victim + `_extract_population` shadow with same arch as target   |
 | Distinguishing-accuracy attack | `distinguishing_accuracy`    | `amulet.distribution_inference.attacks.SuriEvans2022`                                |
 | α₁ / α₂                        | `ratio1`, `ratio2`           | `prepare_distribution_splits(...)`                                                   |
-| Sensitive attribute (CelebA)   | `filter_column=Male`         | default in `run_dist_inference_collusion.py`                                         |
+| Sensitive attribute (CelebA)   | `filter_column=Male`         | default in `modext_distinf.py`                                                       |
 | Sensitive attribute (UTKFace)  | `filter_column=race`         | set by `run_experiments_utkface.sh`                                                  |
 
 ### B.7 Optional sanity checks

@@ -22,9 +22,10 @@ ModExt_DistInf/data/
 ModExt_DistInf/models/
 ModExt_DistInf/results/
 ModExt_DistInf/logs/
-Pois_ModExt/poisoning_modext/data/
-Pois_ModExt/poisoning_modext/saved_models/
-Pois_ModExt/poisoning_modext/logs/
+Pois_ModExt/data/
+Pois_ModExt/models/
+Pois_ModExt/results/
+Pois_ModExt/logs/
 DtRecon_MemAttDistInf/data/
 DtRecon_MemAttDistInf/models/
 DtRecon_MemAttDistInf/saved_models/

@@ -23,7 +23,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
-SMOKE_OUTPUT="${SCRIPT_DIR}/pois_modext_smoke.csv"
+mkdir -p "${SCRIPT_DIR}/results"
+SMOKE_OUTPUT="${SCRIPT_DIR}/results/pois_modext_smoke.csv"
 
 # Start from a clean smoke CSV so a re-run does not accumulate stale rows.
 rm -f "${SMOKE_OUTPUT}"
