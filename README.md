@@ -24,13 +24,13 @@ artifact/
 │   └── run_all.sh                            Full paper reproduction.
 ├── ModExt_DistInf/                           Part B.
 │   ├── modext_distinf.py                     Main pipeline.
+│   ├── generate_table.py                     Renders LaTeX for Table 6.
 │   ├── run_smoke_test.sh                     ~10 min UTKFace spot check.
 │   ├── run_minimal_full.sh                   Reduced-budget config sweep (~30–60 min).
-│   ├── run_experiments_045.sh                CelebA α=0.45/0.55.
-│   ├── run_experiments_0475.sh               CelebA α=0.475/0.525.
-│   ├── run_experiments_utkface.sh            UTKFace, both α pairs.
-│   ├── generate_collusion_table.py           Renders LaTeX for Table 6.
-│   └── check_{celeba,utkface}_*.py           Attribute / subsample sanity checks.
+│   ├── run_all_celeba_ratio045.sh            CelebA α=0.45/0.55.
+│   ├── run_all_celeba_ratio0475.sh           CelebA α=0.475/0.525.
+│   ├── run_all_utkface.sh                    UTKFace, both α pairs.
+│   └── extra_scripts/                        Attribute / subsample sanity checks.
 └── DtRecon_MemAttDistInf/                    Part C.
     └── <TODO: co-author to populate>
 ```
@@ -147,7 +147,7 @@ Reference cells from Table 5, mean ± std over 3 seeds, in %. CIFAR100 non-basel
 
 ## Part B · Test-Time Collusion: Model Extraction → Distribution Inference
 
-**TL;DR.** `bash ModExt_DistInf/run_experiments_{045,0475,utkface}.sh` reproduce §5.3, Table 6, ~12 days on one A100 or ~5.7 days across three GPUs. Run `bash ModExt_DistInf/run_smoke_test.sh` first (~10 min) to confirm the setup works.
+**TL;DR.** The three `bash ModExt_DistInf/run_all_*.sh` scripts reproduce §5.3, Table 6, ~12 days on one A100 or ~5.7 days across three GPUs. Run `bash ModExt_DistInf/run_smoke_test.sh` first (~10 min) to confirm the setup works.
 
 ### B.1 Claims
 
@@ -175,9 +175,9 @@ Reference cells from Table 5, mean ± std over 3 seeds, in %. CIFAR100 non-basel
 | First CelebA download                           | 5–10 min              |
 | First UTKFace download                          | 1–2 min               |
 | `run_smoke_test.sh`                             | ~10 min               |
-| `run_experiments_utkface.sh` (5 exp_ids)        | ~16 h                 |
-| `run_experiments_045.sh` (5 exp_ids)            | ~5.7 days             |
-| `run_experiments_0475.sh` (5 exp_ids)           | ~5.6 days             |
+| `run_all_utkface.sh` (5 exp_ids)                | ~16 h                 |
+| `run_all_celeba_ratio045.sh` (5 exp_ids)        | ~5.7 days             |
+| `run_all_celeba_ratio0475.sh` (5 exp_ids)       | ~5.6 days             |
 | **All three, sequential**                       | **~12 days**          |
 
 The three scripts can run on separate GPUs, cutting wall-clock to the slowest single script (~5.7 days). Per-cell averages (one cell = one `(setting, ratio, exp_id)`); S2 and S3 are slower than S1 because they additionally extract from the victim:
@@ -200,15 +200,15 @@ bash run_minimal_full.sh      # ~30–60 min: may hint at trends, too short to r
 
 ```bash
 cd ModExt_DistInf
-bash run_experiments_045.sh        # results/collusion_results_045.csv
-bash run_experiments_0475.sh       # results/collusion_results_0475.csv
-bash run_experiments_utkface.sh    # results/collusion_results_utkface.csv
+bash run_all_celeba_ratio045.sh    # results/collusion_results_045.csv
+bash run_all_celeba_ratio0475.sh   # results/collusion_results_0475.csv
+bash run_all_utkface.sh            # results/collusion_results_utkface.csv
 ```
 
-Each script loops `exp_id ∈ {0,1,2,3,4} × setting ∈ {1,2,3}`. Training is deterministic in `exp_id`; the three scripts can run in parallel (e.g. `CUDA_VISIBLE_DEVICES=0 bash run_experiments_045.sh &`). When all three finish, render the table:
+Each script loops `exp_id ∈ {0,1,2,3,4} × setting ∈ {1,2,3}`. Training is deterministic in `exp_id`; the three scripts can run in parallel (e.g. `CUDA_VISIBLE_DEVICES=0 bash run_all_celeba_ratio045.sh &`). When all three finish, render the table:
 
 ```bash
-uv run python generate_collusion_table.py --output table.tex   # --metric auc_score for AUC
+uv run python generate_table.py --output table.tex   # --metric auc_score for AUC
 ```
 
 ### B.5 Comparing to the paper
@@ -231,7 +231,7 @@ Reference cells from Table 6, mean ± std over 5 seeds, in %. Bold = above basel
 | Distinguishing accuracy   | `distinguishing_accuracy` | `amulet.distribution_inference.attacks.SuriEvans2022` |
 | α₁ / α₂                   | `ratio1`, `ratio2`        | `prepare_distribution_splits` |
 | Sensitive attr. (CelebA)  | `filter_column=Male`      | default in `modext_distinf.py` |
-| Sensitive attr. (UTKFace) | `filter_column=race`      | set by `run_experiments_utkface.sh` |
+| Sensitive attr. (UTKFace) | `filter_column=race`      | set by `run_all_utkface.sh` |
 
 ---
 

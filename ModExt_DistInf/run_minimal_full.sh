@@ -2,7 +2,7 @@
 # Minimal-budget full configuration sweep for ModExt -> DistInf.
 #
 # Purpose: produce a realistic per-cell timing distribution to project the
-# full 5-seed reproduction (run_experiments_045/_0475/_utkface.sh). NOT a
+# full 5-seed reproduction (run_all_celeba_ratio045/_ratio0475/run_all_utkface.sh). NOT a
 # paper reproduction -- numbers at --num_models 4 / --epochs 3 will be far
 # below the published table.
 #

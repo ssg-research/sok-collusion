@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-attrs_path = Path(__file__).parent / "data" / "celeba" / "list_attr_celeba.txt"
+attrs_path = Path(__file__).parent.parent / "data" / "celeba" / "list_attr_celeba.txt"
 attr_df = pd.read_csv(attrs_path, sep=r"\s+", header=1, index_col=0)
 attr_df = (attr_df + 1) // 2  # convert -1/1 → 0/1
 

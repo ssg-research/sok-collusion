@@ -13,7 +13,7 @@ from pathlib import Path
 from amulet.datasets import load_utkface
 
 data = load_utkface(
-    path=Path(__file__).parent / "data" / "utkface",
+    path=Path(__file__).parent.parent / "data" / "utkface",
     target="age",
     attribute_1="gender",
     attribute_2="race",

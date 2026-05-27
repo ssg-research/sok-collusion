@@ -13,9 +13,9 @@ The binding constraint on `subsample` (= cwise_sample in _heuristic_sample) is:
 so max_subsample = min(n_y0_in_pool // class_imbalance, n_y1_in_pool).
 
 Usage:
-    uv run python experiments/check_utkface_subsample.py --ratio1 0.45 --ratio2 0.55
-    uv run python experiments/check_utkface_subsample.py --ratio1 0.475 --ratio2 0.525
-    uv run python experiments/check_utkface_subsample.py --ratio1 0.45 --ratio2 0.55 --filter_value 1
+    uv run python extra_scripts/check_utkface_subsample.py --ratio1 0.45 --ratio2 0.55
+    uv run python extra_scripts/check_utkface_subsample.py --ratio1 0.475 --ratio2 0.525
+    uv run python extra_scripts/check_utkface_subsample.py --ratio1 0.45 --ratio2 0.55 --filter_value 1
 """
 
 import argparse
@@ -97,7 +97,7 @@ def main() -> None:
     parser.add_argument(
         "--data_root",
         type=str,
-        default=str(Path(__file__).parent / "data" / "utkface"),
+        default=str(Path(__file__).parent.parent / "data" / "utkface"),
     )
     args = parser.parse_args()
 

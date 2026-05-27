@@ -17,9 +17,9 @@ Non-baseline cells are colored relative to the baseline row at the same column:
 Missing cells (experiments not yet run) render as '--' with no coloring.
 
 Usage:
-    uv run python generate_collusion_table.py
-    uv run python generate_collusion_table.py --metric auc_score
-    uv run python generate_collusion_table.py --output table.tex
+    uv run python generate_table.py
+    uv run python generate_table.py --metric auc_score
+    uv run python generate_table.py --output table.tex
 """
 
 import argparse
