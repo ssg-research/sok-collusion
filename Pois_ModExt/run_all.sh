@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Full reproduction of Table tab:trteeval (paper section sec:trteeval):
-# Poison -> ModExt on CIFAR10 and CIFAR100.
+# Full reproduction of Table 5 (paper §5.2): Poison -> ModExt on CIFAR10 and CIFAR100.
 #
 # Outer loop: dataset (cifar10, cifar100).
 # Middle loop: poison rate (0, 0.05, 0.10, 0.15, 0.20 fraction-of-training).
@@ -20,6 +19,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
+
+# Stream progress (dataset extraction, per-epoch logs) live through tee/screen.
+export PYTHONUNBUFFERED=1
 
 for dataset in cifar10 cifar100; do
     for exp_id in 0 1 2; do

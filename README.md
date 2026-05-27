@@ -20,17 +20,17 @@ artifact/
 ├── Pois_ModExt/                              Part A.
 │   ├── pois_modext.py                        Main pipeline.
 │   ├── run_smoke_test.sh                     ~3 min spot check.
-│   ├── run_minimal_full.sh                   Reduced-budget config sweep (~25 min).
+│   ├── run_minimal_full.sh                   Reduced-budget config sweep (~34 min).
 │   └── run_all.sh                            Full paper reproduction.
 ├── ModExt_DistInf/                           Part B.
 │   ├── modext_distinf.py                     Main pipeline.
+│   ├── generate_table.py                     Renders LaTeX for Table 6.
 │   ├── run_smoke_test.sh                     ~10 min UTKFace spot check.
-│   ├── run_minimal_full.sh                   Reduced-budget config sweep (~30–60 min).
-│   ├── run_experiments_045.sh                CelebA α=0.45/0.55.
-│   ├── run_experiments_0475.sh               CelebA α=0.475/0.525.
-│   ├── run_experiments_utkface.sh            UTKFace, both α pairs.
-│   ├── generate_collusion_table.py           Renders LaTeX for Table 6.
-│   └── check_{celeba,utkface}_*.py           Attribute / subsample sanity checks.
+│   ├── run_minimal_full.sh                   Reduced-budget config sweep (~1.5 h).
+│   ├── run_all_celeba_ratio045.sh            CelebA α=0.45/0.55.
+│   ├── run_all_celeba_ratio0475.sh           CelebA α=0.475/0.525.
+│   ├── run_all_utkface.sh                    UTKFace, both α pairs.
+│   └── extra_scripts/                        Attribute / subsample sanity checks.
 └── DtRecon_MemAttDistInf/                    Part C.
     └── <TODO: co-author to populate>
 ```
@@ -50,7 +50,7 @@ Part C may add deps for GIFD; the co-author will update `pyproject.toml` before 
 
 ## Part A · Train-Test Collusion: Poisoning → Model Extraction
 
-**TL;DR.** `bash Pois_ModExt/run_all.sh` reproduces §5.2, Table 5, ~52 h on one A100. Run `bash Pois_ModExt/run_smoke_test.sh` first (~3 min) to confirm the setup works.
+**TL;DR.** `bash Pois_ModExt/run_all.sh` reproduces §5.2, Table 5, ~3 days on one A100. Run `bash Pois_ModExt/run_smoke_test.sh` first (~3 min) to confirm the setup works.
 
 ### A.1 Claims
 
@@ -74,18 +74,21 @@ Part C may add deps for GIFD; the co-author will update `pyproject.toml` before 
 
 | Step                                                 | Wall time             |
 |------------------------------------------------------|-----------------------|
-| First CIFAR download (each)                          | ~3 s                  |
+| First CIFAR download (each)                          | ~10 s                 |
 | `run_smoke_test.sh`                                  | ~2.5 min              |
-| `run_minimal_full.sh`                                | ~25 min               |
-| `run_all.sh`, per dataset                            | ~26 h                 |
-| `run_all.sh`, full (CIFAR10 + CIFAR100)              | **~52 h (~2.2 days)** |
+| `run_minimal_full.sh`                                | ~34 min               |
+| `run_all.sh`, CIFAR10                                | ~1.2 days             |
+| `run_all.sh`, CIFAR100                               | ~1.8 days             |
+| `run_all.sh`, full                                   | **~3 days**           |
+
+The full-sweep rows are extrapolated from `run_minimal_full.sh` (16 cells at 10 epochs, 34 min). Target training and extraction both scale linearly with `--epochs`, so the 200-epoch full sweep is ~20× per cell; cost is dominated by extraction at the 25k-query budget (~45 min/cell on CIFAR10, ~80 min on CIFAR100). Per `(dataset, seed, poison)` group the target is trained once and reused across the four query budgets.
 
 ### A.3 Smoke test
 
 ```bash
 cd Pois_ModExt
 bash run_smoke_test.sh        # ~3 min: confirms the setup works.
-bash run_minimal_full.sh      # ~25 min: may hint at trends, too short to reproduce the table.
+bash run_minimal_full.sh      # ~34 min: may hint at trends, too short to reproduce the table.
 ```
 
 ### A.4 Full reproduction (paper §5.2, Table 5)
@@ -147,7 +150,7 @@ Reference cells from Table 5, mean ± std over 3 seeds, in %. CIFAR100 non-basel
 
 ## Part B · Test-Time Collusion: Model Extraction → Distribution Inference
 
-**TL;DR.** `bash ModExt_DistInf/run_experiments_{045,0475,utkface}.sh` reproduce §5.3, Table 6, ~12 days on one A100 or ~5.7 days across three GPUs. Run `bash ModExt_DistInf/run_smoke_test.sh` first (~10 min) to confirm the setup works.
+**TL;DR.** The three `bash ModExt_DistInf/run_all_*.sh` scripts reproduce §5.3, Table 6, ~12 days on one A100 or ~5.7 days across three GPUs. Run `bash ModExt_DistInf/run_smoke_test.sh` first (~10 min) to confirm the setup works.
 
 ### B.1 Claims
 
@@ -175,9 +178,10 @@ Reference cells from Table 5, mean ± std over 3 seeds, in %. CIFAR100 non-basel
 | First CelebA download                           | 5–10 min              |
 | First UTKFace download                          | 1–2 min               |
 | `run_smoke_test.sh`                             | ~10 min               |
-| `run_experiments_utkface.sh` (5 exp_ids)        | ~16 h                 |
-| `run_experiments_045.sh` (5 exp_ids)            | ~5.7 days             |
-| `run_experiments_0475.sh` (5 exp_ids)           | ~5.6 days             |
+| `run_minimal_full.sh`                           | ~1.5 h                |
+| `run_all_utkface.sh` (5 exp_ids)                | ~16 h                 |
+| `run_all_celeba_ratio045.sh` (5 exp_ids)        | ~5.7 days             |
+| `run_all_celeba_ratio0475.sh` (5 exp_ids)       | ~5.6 days             |
 | **All three, sequential**                       | **~12 days**          |
 
 The three scripts can run on separate GPUs, cutting wall-clock to the slowest single script (~5.7 days). Per-cell averages (one cell = one `(setting, ratio, exp_id)`); S2 and S3 are slower than S1 because they additionally extract from the victim:
@@ -193,22 +197,22 @@ The three scripts can run on separate GPUs, cutting wall-clock to the slowest si
 ```bash
 cd ModExt_DistInf
 bash run_smoke_test.sh        # ~10 min: confirms the setup works.
-bash run_minimal_full.sh      # ~30–60 min: may hint at trends, too short to reproduce the table.
+bash run_minimal_full.sh      # ~1.5 h: may hint at trends, too short to reproduce the table.
 ```
 
 ### B.4 Full reproduction (paper §5.3, Table 6)
 
 ```bash
 cd ModExt_DistInf
-bash run_experiments_045.sh        # results/collusion_results_045.csv
-bash run_experiments_0475.sh       # results/collusion_results_0475.csv
-bash run_experiments_utkface.sh    # results/collusion_results_utkface.csv
+bash run_all_celeba_ratio045.sh    # results/collusion_results_045.csv
+bash run_all_celeba_ratio0475.sh   # results/collusion_results_0475.csv
+bash run_all_utkface.sh            # results/collusion_results_utkface.csv
 ```
 
-Each script loops `exp_id ∈ {0,1,2,3,4} × setting ∈ {1,2,3}`. Training is deterministic in `exp_id`; the three scripts can run in parallel (e.g. `CUDA_VISIBLE_DEVICES=0 bash run_experiments_045.sh &`). When all three finish, render the table:
+Each script loops `exp_id ∈ {0,1,2,3,4} × setting ∈ {1,2,3}`. Training is deterministic in `exp_id`; the three scripts can run in parallel (e.g. `CUDA_VISIBLE_DEVICES=0 bash run_all_celeba_ratio045.sh &`). When all three finish, render the table:
 
 ```bash
-uv run python generate_collusion_table.py --output table.tex   # --metric auc_score for AUC
+uv run python generate_table.py --output table.tex   # --metric auc_score for AUC
 ```
 
 ### B.5 Comparing to the paper
@@ -231,7 +235,7 @@ Reference cells from Table 6, mean ± std over 5 seeds, in %. Bold = above basel
 | Distinguishing accuracy   | `distinguishing_accuracy` | `amulet.distribution_inference.attacks.SuriEvans2022` |
 | α₁ / α₂                   | `ratio1`, `ratio2`        | `prepare_distribution_splits` |
 | Sensitive attr. (CelebA)  | `filter_column=Male`      | default in `modext_distinf.py` |
-| Sensitive attr. (UTKFace) | `filter_column=race`      | set by `run_experiments_utkface.sh` |
+| Sensitive attr. (UTKFace) | `filter_column=race`      | set by `run_all_utkface.sh` |
 
 ---
 

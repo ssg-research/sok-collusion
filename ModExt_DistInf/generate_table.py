@@ -1,5 +1,5 @@
 """
-Generate the LaTeX table tab:modextDIA from collusion experiment CSVs.
+Generate the LaTeX for the paper's Table 6 (§5.3) from collusion experiment CSVs.
 
 Reads three result files written by modext_distinf.py:
   - collusion_results_045.csv     (CelebA, ratio 0.45/0.55)
@@ -17,9 +17,9 @@ Non-baseline cells are colored relative to the baseline row at the same column:
 Missing cells (experiments not yet run) render as '--' with no coloring.
 
 Usage:
-    uv run python generate_collusion_table.py
-    uv run python generate_collusion_table.py --metric auc_score
-    uv run python generate_collusion_table.py --output table.tex
+    uv run python generate_table.py
+    uv run python generate_table.py --metric auc_score
+    uv run python generate_table.py --output table.tex
 """
 
 import argparse

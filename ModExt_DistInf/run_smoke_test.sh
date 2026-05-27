@@ -13,6 +13,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
+# Stream progress (dataset extraction, per-epoch logs) live through tee/screen.
+export PYTHONUNBUFFERED=1
+
 for setting in 1 2 3; do
     echo "=== smoke setting=${setting} ==="
     uv run python modext_distinf.py \

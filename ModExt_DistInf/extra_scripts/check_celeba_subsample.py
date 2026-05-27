@@ -9,9 +9,9 @@ The binding constraint on `subsample` (= cwise_sample in _heuristic_sample) is:
 so max_subsample = min(n_y0_in_pool // class_imbalance, n_y1_in_pool).
 
 Usage:
-    uv run python experiments/check_celeba_subsample.py --ratio 0.45
-    uv run python experiments/check_celeba_subsample.py --ratio1 0.45 --ratio2 0.55
-    uv run python experiments/check_celeba_subsample.py --ratio1 0.4 --ratio2 0.6
+    uv run python extra_scripts/check_celeba_subsample.py --ratio 0.45
+    uv run python extra_scripts/check_celeba_subsample.py --ratio1 0.45 --ratio2 0.55
+    uv run python extra_scripts/check_celeba_subsample.py --ratio1 0.4 --ratio2 0.6
 """
 
 import argparse
@@ -111,7 +111,7 @@ def main() -> None:
     parser.add_argument(
         "--data_root",
         type=str,
-        default=str(Path(__file__).parent / "data" / "celeba"),
+        default=str(Path(__file__).parent.parent / "data" / "celeba"),
     )
     args = parser.parse_args()
 
