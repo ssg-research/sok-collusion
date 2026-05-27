@@ -26,7 +26,7 @@ artifact/
 │   ├── modext_distinf.py                     Main pipeline.
 │   ├── generate_table.py                     Renders LaTeX for Table 6.
 │   ├── run_smoke_test.sh                     ~10 min UTKFace spot check.
-│   ├── run_minimal_full.sh                   Reduced-budget config sweep (~30–60 min).
+│   ├── run_minimal_full.sh                   Reduced-budget config sweep (~1.5 h).
 │   ├── run_all_celeba_ratio045.sh            CelebA α=0.45/0.55.
 │   ├── run_all_celeba_ratio0475.sh           CelebA α=0.475/0.525.
 │   ├── run_all_utkface.sh                    UTKFace, both α pairs.
@@ -178,6 +178,7 @@ Reference cells from Table 5, mean ± std over 3 seeds, in %. CIFAR100 non-basel
 | First CelebA download                           | 5–10 min              |
 | First UTKFace download                          | 1–2 min               |
 | `run_smoke_test.sh`                             | ~10 min               |
+| `run_minimal_full.sh`                           | ~1.5 h                |
 | `run_all_utkface.sh` (5 exp_ids)                | ~16 h                 |
 | `run_all_celeba_ratio045.sh` (5 exp_ids)        | ~5.7 days             |
 | `run_all_celeba_ratio0475.sh` (5 exp_ids)       | ~5.6 days             |
@@ -196,7 +197,7 @@ The three scripts can run on separate GPUs, cutting wall-clock to the slowest si
 ```bash
 cd ModExt_DistInf
 bash run_smoke_test.sh        # ~10 min: confirms the setup works.
-bash run_minimal_full.sh      # ~30–60 min: may hint at trends, too short to reproduce the table.
+bash run_minimal_full.sh      # ~1.5 h: may hint at trends, too short to reproduce the table.
 ```
 
 ### B.4 Full reproduction (paper §5.3, Table 6)
