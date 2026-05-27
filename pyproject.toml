@@ -1,0 +1,18 @@
+[project]
+name = "usenix26-sok-colluding-adversaries-artifact"
+version = "0.1.0"
+description = "USENIX Security 2026 artifact for the SoK on colluding adversaries paper. Installs the pinned amuletml release used to produce the paper's experiments."
+readme = "README.md"
+requires-python = "~=3.11.0"
+
+dependencies = [
+    # Pinned strictly: this is the exact release used to produce the paper's
+    # numbers. All other deps (torch, numpy, pandas, scikit-learn, ...) are
+    # transitive through amuletml and locked in uv.lock.
+    "amuletml==0.5.1",
+]
+
+[tool.uv]
+# Tested only with these resolutions; pin amuletml strictly so reviewers
+# get the exact code used to produce the paper's numbers.
+package = false

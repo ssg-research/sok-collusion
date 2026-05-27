@@ -1,0 +1,36 @@
+# Python / uv
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Result CSVs (we ship only the reference numbers in the README, not the data files)
+*.csv
+
+# Per-experiment working directories (datasets, checkpoints, logs).
+# All three parts create these on first run; they should never be committed.
+ModExt_DistInf/data/
+ModExt_DistInf/models/
+ModExt_DistInf/results/
+ModExt_DistInf/logs/
+Pois_ModExt/poisoning_modext/data/
+Pois_ModExt/poisoning_modext/saved_models/
+Pois_ModExt/poisoning_modext/logs/
+DtRecon_MemAttDistInf/data/
+DtRecon_MemAttDistInf/models/
+DtRecon_MemAttDistInf/saved_models/
+DtRecon_MemAttDistInf/results/
+DtRecon_MemAttDistInf/logs/
+
+# Generated LaTeX output from generate_collusion_table.py
+ModExt_DistInf/table.tex
+table.tex
