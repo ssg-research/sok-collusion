@@ -20,7 +20,7 @@ artifact/
 ├── Pois_ModExt/                              Part A.
 │   ├── pois_modext.py                        Main pipeline.
 │   ├── run_smoke_test.sh                     ~3 min spot check.
-│   ├── run_minimal_full.sh                   Reduced-budget config sweep (~25 min).
+│   ├── run_minimal_full.sh                   Reduced-budget config sweep (~34 min).
 │   └── run_all.sh                            Full paper reproduction.
 ├── ModExt_DistInf/                           Part B.
 │   ├── modext_distinf.py                     Main pipeline.
@@ -50,7 +50,7 @@ Part C may add deps for GIFD; the co-author will update `pyproject.toml` before 
 
 ## Part A · Train-Test Collusion: Poisoning → Model Extraction
 
-**TL;DR.** `bash Pois_ModExt/run_all.sh` reproduces §5.2, Table 5, ~52 h on one A100. Run `bash Pois_ModExt/run_smoke_test.sh` first (~3 min) to confirm the setup works.
+**TL;DR.** `bash Pois_ModExt/run_all.sh` reproduces §5.2, Table 5, ~3 days on one A100. Run `bash Pois_ModExt/run_smoke_test.sh` first (~3 min) to confirm the setup works.
 
 ### A.1 Claims
 
@@ -74,18 +74,21 @@ Part C may add deps for GIFD; the co-author will update `pyproject.toml` before 
 
 | Step                                                 | Wall time             |
 |------------------------------------------------------|-----------------------|
-| First CIFAR download (each)                          | ~3 s                  |
+| First CIFAR download (each)                          | ~10 s                 |
 | `run_smoke_test.sh`                                  | ~2.5 min              |
-| `run_minimal_full.sh`                                | ~25 min               |
-| `run_all.sh`, per dataset                            | ~26 h                 |
-| `run_all.sh`, full (CIFAR10 + CIFAR100)              | **~52 h (~2.2 days)** |
+| `run_minimal_full.sh`                                | ~34 min               |
+| `run_all.sh`, CIFAR10                                | ~1.2 days             |
+| `run_all.sh`, CIFAR100                               | ~1.8 days             |
+| `run_all.sh`, full                                   | **~3 days**           |
+
+The full-sweep rows are extrapolated from `run_minimal_full.sh` (16 cells at 10 epochs, 34 min). Target training and extraction both scale linearly with `--epochs`, so the 200-epoch full sweep is ~20× per cell; cost is dominated by extraction at the 25k-query budget (~45 min/cell on CIFAR10, ~80 min on CIFAR100). Per `(dataset, seed, poison)` group the target is trained once and reused across the four query budgets.
 
 ### A.3 Smoke test
 
 ```bash
 cd Pois_ModExt
 bash run_smoke_test.sh        # ~3 min: confirms the setup works.
-bash run_minimal_full.sh      # ~25 min: may hint at trends, too short to reproduce the table.
+bash run_minimal_full.sh      # ~34 min: may hint at trends, too short to reproduce the table.
 ```
 
 ### A.4 Full reproduction (paper §5.2, Table 5)
