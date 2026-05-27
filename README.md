@@ -19,11 +19,13 @@ artifact/
 ├── .python-version                           Python 3.11.
 ├── Pois_ModExt/                              Part A. Poisoning -> Model Extraction.
 │   ├── pois_modext.py                        Main pipeline (one cell).
-│   ├── run_smoke_test.sh                     ~5–15 min spot check on one GPU.
-│   └── run_all.sh                            Full reproduction sweep.
+│   ├── run_smoke_test.sh                     ~3 min spot check on one GPU.
+│   ├── run_minimal_full.sh                   Full config sweep at reduced budget (~25 min).
+│   └── run_all.sh                            Full paper reproduction sweep.
 ├── ModExt_DistInf/                           Part B. ModExt -> DistInf.
 │   ├── modext_distinf.py                     Main pipeline (one cell).
 │   ├── run_smoke_test.sh                     ~10 min UTKFace spot check.
+│   ├── run_minimal_full.sh                   Full config sweep at reduced budget (~30–60 min).
 │   ├── run_experiments_045.sh                CelebA α=0.45/0.55 (full).
 │   ├── run_experiments_0475.sh               CelebA α=0.475/0.525 (full).
 │   ├── run_experiments_utkface.sh            UTKFace, both α pairs (full).
@@ -90,14 +92,21 @@ The shared `uv sync` installs `amuletml==0.5.1` and its transitive deps. No Part
 
 #### Time budget
 
-The Part A result CSVs have no `timestamp` column, so we cannot reconstruct historical per-cell timings. The reference run took several days of wall-clock time, but the exact number is unknown without re-measuring. The smoke test in §A.3 will produce a tight enough per-cell estimate to project the full sweep; populate this table after running it once.
+Measured on an A100 80GB. The smoke test in §A.3 gives the per-cell number directly; the full-sweep entries are projections from the smoke (5-epoch) timing scaled linearly to 200 epochs and to each of the four query budgets.
 
-| Step                                             | Wall time (A100 80GB) |
-| ------------------------------------------------ | --------------------- |
-| `uv sync` (covered by Shared setup)              | 1–3 min               |
-| First CIFAR10 / CIFAR100 download                | ~30 s each            |
-| `run_smoke_test.sh` (2 cells, 5 epochs)          | ~5–15 min *(estimated; measure on first run)* |
-| `run_all.sh` (5×4×3×2 = 120 cells, 200 epochs)   | *(TODO: project from smoke)* |
+| Step                                                   | Wall time (A100 80GB)                |
+| ------------------------------------------------------ | ------------------------------------ |
+| `uv sync` (covered by Shared setup)                    | 1–3 min                              |
+| First CIFAR10 / CIFAR100 download                      | ~3 s each (~170 MB at ~80 MB/s)      |
+| `run_smoke_test.sh` (2 cells, 5 epochs, query=2500)    | **~2.5 min** *(measured)*            |
+| `run_all.sh`, per dataset (15 unique targets + 60 extractions + evals) | **~26 h** *(projected)* |
+| `run_all.sh` full (CIFAR10 + CIFAR100)                 | **~52 h ≈ 2.2 days** *(projected)*   |
+
+Within one `run_all.sh` invocation:
+
+- One target model: ~30 min for 200 epochs of ResNet34 on 25 k CIFAR10/100 records. 30 unique `(dataset, poison_rate, exp_id)` combinations → **~15 h target training** total.
+- One extraction: 4–40 min depending on query budget (2500 / 6250 / 12500 / 25000 records). 120 extractions across all four budgets → **~37 h extraction** total.
+- One evaluation: ~10 s. 120 evaluations → 20 min, negligible.
 
 ### A.3 Smoke test (recommended first)
 
@@ -115,6 +124,14 @@ The smoke test runs two cells on CIFAR10 (`poison ∈ {0.0, 0.1}`, `query_size=0
 5. Evaluation populates `target_acc_test`, `target_acc_poisoned`, `stolen_acc_test`, `fidelity`, `correct_fidelity`, `stolen_acc_poisoned`.
 
 The smoke CSV is written to `results/pois_modext_smoke.csv`, separate from the full-reproduction output (`results/pois_modext_results_{dataset}.csv`).
+
+For a tighter time-budget projection before committing to the multi-day `run_all.sh`, also run:
+
+```bash
+bash run_minimal_full.sh
+```
+
+This sweeps both datasets, both poison branches, and all four query budgets at `--epochs 10` and `exp_id=0` (16 cells, ~25 min on an A100). Output goes to `results/pois_modext_minimal.csv` with a `timestamp` column per row; deltas between consecutive timestamps are the per-cell wall times. Stdout is tee'd to `logs/run_minimal_full_<UTC>.log` so a `screen` session can be detached and the log copied off afterwards.
 
 ### A.4 Full reproduction (paper Table `tab:trteeval`)
 
@@ -270,6 +287,14 @@ Runs all three settings (Baseline, Cross-Arch, Same-Arch) on **UTKFace** at α=0
 4. A row is appended to `results/collusion_smoke.csv` with `distinguishing_accuracy` and `auc_score` populated.
 
 The smoke CSV is written to a separate path so it does not feed into `generate_collusion_table.py`. Successful smoke output ends with the contents of `results/collusion_smoke.csv` printed to the terminal.
+
+For a tighter time-budget projection before committing to the multi-day full reproduction, also run:
+
+```bash
+bash run_minimal_full.sh
+```
+
+This sweeps both datasets, both ratio pairs, and all three settings at the smoke per-cell budget and `exp_id=0` (12 cells, ~30–60 min on an A100). Output goes to `results/collusion_results_minimal.csv` with a `timestamp` column per row; deltas between consecutive timestamps are the per-cell wall times. Stdout is tee'd to `logs/run_minimal_full_<UTC>.log`.
 
 ### B.4 Full reproduction (paper Table `tab:modextDIA`)
 
