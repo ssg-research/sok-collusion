@@ -31,6 +31,9 @@ DtRecon_MemAttDistInf/models/
 DtRecon_MemAttDistInf/saved_models/
 DtRecon_MemAttDistInf/results/
 DtRecon_MemAttDistInf/logs/
+DtRecon_MemAttDistInf/recon_pools/
+DtRecon_MemAttDistInf/tables/
+DtRecon_MemAttDistInf/GIFD/
 
 # Generated LaTeX output from generate_collusion_table.py
 ModExt_DistInf/table.tex

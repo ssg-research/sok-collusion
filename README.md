@@ -32,7 +32,17 @@ artifact/
 │   ├── run_all_utkface.sh                    UTKFace, both α pairs.
 │   └── extra_scripts/                        Attribute / subsample sanity checks.
 └── DtRecon_MemAttDistInf/                    Part C.
-    └── <TODO: co-author to populate>
+    ├── cifar_recon.py                        Batched init-round Geiping inversion (MIA pool).
+    ├── face_recon.py                         GIFD inversion at 64x64 (AIA/DIA pool); needs $GIFD_ROOT.
+    ├── prep_celeba.py                        One-time CelebA -> 64x64 tensor preparation.
+    ├── common.py, face_common.py, face_targets.py   Shared pool/data/target utilities.
+    ├── mia_overlap.py                        DataRecon -> MIA (LiRA).
+    ├── aia_image.py                          DataRecon -> AIA (Duddu-style probe).
+    ├── dia_image.py                          DataRecon -> DIA (Suri-Evans black-box).
+    ├── generate_teeval_tables.py             Renders the paper LaTeX tables from results/.
+    ├── run_smoke_test.sh                     ~3-5 min MIA spot check (no GIFD/faces).
+    ├── run_minimal.sh                        Reduced-budget sweep over every setting.
+    └── run_all.sh                            Full paper reproduction (section 5.4).
 ```
 
 Each pipeline creates `data/`, `models/`, `logs/`, `results/` on first run. All gitignored; reference numbers live in §§A.5, B.5, C.5, not on disk.
@@ -235,82 +245,102 @@ Reference cells from Table 6, mean ± std over 5 seeds, in %. Bold = above basel
 | Distinguishing accuracy   | `distinguishing_accuracy` | `amulet.distribution_inference.attacks.SuriEvans2022` |
 | α₁ / α₂                   | `ratio1`, `ratio2`        | `prepare_distribution_splits` |
 | Sensitive attr. (CelebA)  | `filter_column=Male`      | default in `modext_distinf.py` |
-| Sensitive attr. (UTKFace) | `filter_column=race`      | set by `run_all_utkface.sh` |
+| Sensitive attr. (UTKFace) | `filter_column=race`      | set by `run_experiments_utkface.sh` |
 
 ---
 
 ## Part C · Test-Time Collusion: Data Reconstruction → {MIA, AIA, DIA}
 
-**TL;DR.** *(TODO: co-author.)* Scripts in `DtRecon_MemAttDistInf/` reproduce the §5.4 results (reported as prose in the paper, no numbered tables).
-
-> **Status:** §C.1 and §C.5 are populated from the §5.4 prose results. Items marked *(TODO)* are for the Part C owner.
+**TL;DR.** `bash DtRecon_MemAttDistInf/run_all.sh` reproduce the §5.4 results (reported as prose in the paper, no numbered tables). Run `bash DtRecon_MemAttDistInf/run_smoke_test.sh` first (~3-5 min, MIA only, no GIFD) to confirm the setup. MIA needs only CIFAR; AIA and DIA additionally need the GIFD checkout, its StyleGAN2-FFHQ checkpoint, and prepared face data (§C.2).
 
 ### C.1 Claims
 
-> **Main claim (C).** Augmenting `D_aux` with `D_train` records reconstructed via DataRecon (GIFD generative gradient inversion) improves MIA, AIA, and DIA accuracy over the disjoint-`D_aux` baseline. The effect is monotone for AIA and DIA; for MIA it is positive at 25–50% replacement and saturates by 75%.
+> **Main claim (C).** Augmenting `D_aux` with `D_train` records reconstructed via DataRecon (GIFD generative gradient inversion) improves MIA, AIA, and DIA accuracy over the disjoint-`D_aux` baseline. The effect is monotone for AIA and DIA; for MIA it is positive at 25-50% replacement and saturates by 75%.
 
 1. **C-C1 (DataRecon → MIA).** On CIFAR10 and CIFAR100, LiRA TPR@FPR=0.01 exceeds baseline at 25% and 50% replacement; may regress at 75% as reconstruction error accumulates.
-2. **C-C2 (DataRecon → AIA).** On CelebA and UTKFace, alignment-attack AUC increases monotonically with replacement ratio.
+2. **C-C2 (DataRecon → AIA).** On CelebA and UTKFace, attribute-inference AUC increases monotonically with replacement ratio.
 3. **C-C3 (DataRecon → DIA).** On CelebA and UTKFace, blackbox DistInf accuracy for α₁=0.5 vs. α₂∈{0.1, 0.9} increases (near-)monotonically with replacement ratio.
 
 ### C.2 Requirements
 
 | Resource | Need |
 |----------|------|
-| GPU  | *(TODO)* |
-| Disk | *(TODO)* |
-| RAM  | *(TODO)* |
+| GPU  | One CUDA GPU. MIA (ResNet-34 LiRA) and batched CIFAR reconstruction run in ≥16 GB; the GIFD/StyleGAN2 face reconstruction is the heaviest step and wants ≥24 GB (lower the recon batch size to fit less). Reference runs on A100 80 GB. |
+| Disk | ~2 GB datasets (CIFAR + CelebA + UTKFace) + ~0.35 GB StyleGAN2-FFHQ checkpoint + ~5 GB reconstruction pools and model cache. ~10 GB total. |
+| RAM  | 16 GB. |
 
-Shared `uv sync` covers torch and amuletml. *(TODO: co-author to document the GIFD install path. PyPI? Vendored? Already pulled by amuletml? If extra, add to `pyproject.toml`.)*
+`uv sync` installs everything Part C needs from PyPI: torch and amuletml (all MIA needs), plus `datasets` (for the CelebA cache), `setuptools`, and `ninja` (for the face reconstruction) used by AIA/DIA. **AIA and DIA additionally require GIFD** (Fang et al., ICCV 2023), which is *not* on PyPI and is *not* pulled by amuletml. It is an external checkout:
+
+1. Clone GIFD into `DtRecon_MemAttDistInf/GIFD` (or point `$GIFD_ROOT` at an existing checkout): `git clone https://github.com/ffhibnese/GIFD GIFD`.
+2. Download the StyleGAN2-FFHQ generator `stylegan2-ffhq-config-f.pt` into `GIFD/inversefed/genmodels/stylegan2_io/` (the face reconstruction inverts into its latent space).
+3. The StyleGAN2 face reconstruction JIT-compiles two CUDA ops (`fused`, `upfirdn2d`) on first import via `torch.utils.cpp_extension`. Its build backend (`setuptools` + `ninja`) is in `pyproject.toml`, so `uv sync` installs it; the compile step additionally needs a system CUDA toolkit (`nvcc`, on torch's CUDA 12.4 line) and a C++ compiler. MIA needs none of this.
+
+Face data: CelebA must be prepared once into a 64×64 tensor with `uv run python prep_celeba.py` (writes `data/celeba/celeba_64.pt` + `celeba_attr.npz`); UTKFace is read from `data/utkface/utkface.csv`. Override the data root with `$PARTC_DATA`.
+
+Face targets: the AIA target is a ResNet-18 trained per `(dataset, seed)` on `D_train` (§5.4). `run_all.sh` and `run_minimal.sh` train it automatically before the sweep, so no manual step is needed.
 
 Datasets: CIFAR{10,100} (MIA), CelebA + UTKFace (AIA, DIA). Same licenses as Parts A and B.
 
 Task / sensitive-attribute pairings (§5.4):
 
 - AIA, CelebA: target=`Smiling`, sensitive=`Male`.
-- AIA, UTKFace: target=`gender`, sensitive=`race`.
-- DIA, both: sensitive=`Male`/`gender`; α₁=0.5 vs α₂∈{0.1, 0.9}.
+- AIA, UTKFace: target=`sex`, sensitive=`race`.
+- DIA, sensitive: `Male` (CelebA) / `sex` (UTKFace); α₁=0.5 vs α₂∈{0.1, 0.9}.
 - MIA, CIFARs: standard random member / non-member split.
 
-#### Time budget *(TODO)*
+#### Time budget (A100 80 GB)
 
-| Step                                      | Wall time |
-|-------------------------------------------|-----------|
-| `run_smoke_test.sh`                       | *(TODO)*  |
-| Full DataRecon → MIA reproduction         | *(TODO)*  |
-| Full DataRecon → AIA reproduction         | *(TODO)*  |
-| Full DataRecon → DIA reproduction         | *(TODO)*  |
-| **Full Part-C reproduction (sequential)** | *(TODO)*  |
+MIA and CIFAR-reconstruction timings are measured; AIA/DIA and face-reconstruction timings are estimated. The three attack blocks are independent and can run on separate GPUs.
+
+| Step                                                       | Wall time            |
+|------------------------------------------------------------|----------------------|
+| `run_smoke_test.sh`                                        | ~3-5 min             |
+| `run_minimal.sh`                                           | ~30-60 min           |
+| CIFAR reconstruction, per dataset (100 records, batched)   | ~10-15 min           |
+| Full DataRecon → MIA (n=1 seed; 4 overlaps × 2 datasets)   | ~8 h (≈1 h/cell) |
+| Face (GIFD@64²) reconstruction, per 100-record pool        | several hours |
+| Full DataRecon → AIA (6 recon pools + 120 probe cells)     | ~1-3 days, recon-dominated |
+| Full DataRecon → DIA (reuses target-0 pools + 48 cells)    | ~half a day |
+| **Full Part-C reproduction (sequential)**                  | **~3-5 days** |
 
 ### C.3 Smoke test
 
-*(TODO: co-author. Exercise one of MIA/AIA/DIA end-to-end on a small subset, under one hour.)*
+`run_smoke_test.sh` exercises the cheapest end-to-end path: reconstruct 16 CIFAR10 records, then run one MIA cell (overlap 0.5, 2 shadows, 2 epochs). It touches the whole MIA stack (amulet import, GIFD-free reconstruction, LiRA, metrics) in ~3-5 min and needs no GIFD or face data. It does not reproduce any paper number.
 
 ```bash
 cd DtRecon_MemAttDistInf
-bash run_smoke_test.sh
+bash run_smoke_test.sh        # ~3-5 min: confirms the setup works (MIA path).
+bash run_minimal.sh           # ~30-60 min: reduced budget over every setting; hints at trends.
 ```
 
 ### C.4 Full reproduction (paper §5.4)
 
-*(TODO: co-author. Expected layout, mirroring Parts A and B:)*
+```bash
+cd DtRecon_MemAttDistInf
+bash run_all.sh                                  # all three attacks, sequential
+uv run python generate_teeval_tables.py          # render the paper LaTeX tables from results/
+```
+
+`run_all.sh` runs three independent blocks, each reconstructing then sweeping; split them across GPUs by running the blocks separately. One cell = `(attack, dataset, overlap[, α₂][, seed])`. Layout:
 
 ```text
 DtRecon_MemAttDistInf/
-├── <main_pipeline>.py          # one cell = (attack, dataset, replacement_ratio[, α₂])
-├── run_smoke_test.sh
-├── run_experiments_mia.sh      # CIFAR10 + CIFAR100, 0/25/50/75%
-├── run_experiments_aia.sh      # CelebA + UTKFace, 0/25/50/75%
-├── run_experiments_dia.sh      # CelebA + UTKFace × {α₂=0.1, α₂=0.9}, 0/25/50/75%
-├── generate_teeval_tables.py
-└── results/
+├── cifar_recon.py / face_recon.py / prep_celeba.py   # reconstruction + face-data prep
+├── common.py / face_common.py / face_targets.py      # shared pool, data, target utilities
+├── mia_overlap.py / aia_image.py / dia_image.py       # one pipeline per attack
+├── generate_teeval_tables.py                          # renders the paper tables
+├── run_smoke_test.sh / run_minimal.sh / run_all.sh
+├── recon_pools/                                       # reconstructions (created on first run)
+└── results/                                           # per-attack CSVs (created on first run)
 ```
 
-The three reproduction scripts should be independent so they can run on separate GPUs (cf. §B.4).
+Each attack replaces an overlap-fraction `p ∈ {0, 0.25, 0.5, 0.75}` of the adversary's auxiliary data (`D_aux`) with `D_train` records recovered by DataRecon, then trains its shadow/probe models on the mixed set (§5.4). At `p=0` the adversary's data is disjoint from `D_train`.
+
+The three attack blocks in `run_all.sh` are independent and can run on separate GPUs: the MIA and AIA blocks each reconstruct their own pools, and the DIA block rebuilds the seed-0 reconstruction pool itself if the AIA block has not already produced it (cf. §B.4).
 
 ### C.5 Comparing to the paper
 
-Bold = above baseline + std (green in paper). AIA and DIA use 5-run means ± std; MIA reproduces single-run TPRs from the §5.4 prose. *(Co-author to confirm which MIA numbers are camera-ready; an alternative 5-run mean ± std version exists in the paper source.)*
+Reference cells from §5.4. Bold = above baseline (green in the paper). AIA and DIA are means ± std over five and three runs respectively; MIA reports the §5.4 single-run TPRs. Reproduced means may drift slightly from cuDNN nondeterminism.
 
 **DataRecon → MIA** (TPR@FPR=0.01, %):
 
@@ -347,7 +377,19 @@ C-C3: all twelve non-baseline cells at or above baseline + std. The CelebA α₂
 
 ### C.6 Mapping to paper claims
 
-*(TODO: co-author. Mirror §A.6 / §B.6. Cover C-C1, C-C2, C-C3, plus the replacement-ratio knob and GIFD reconstruction.)*
+| Paper element                          | Where to read it                          | Code path |
+|----------------------------------------|-------------------------------------------|-----------|
+| DataRecon reconstruction (CIFAR)       | `recon_pools/<ds>_seed0/rec_*.pt`         | `cifar_recon.py` (batched init-round Geiping inversion) |
+| DataRecon reconstruction (faces)       | `recon_pools/<ds>_seed*_geiping/rec_*.pt` | `face_recon.py` (GIFD StyleGAN2 inversion at 64²) |
+| Replacement / overlap ratio `p`        | `overlap_p` column / `--overlap[_p]`      | injected into shadow data by `build_gifd_pool_image` (MIA) and the per-attack pool builders (AIA/DIA) |
+| **C-C1** MIA TPR@FPR=0.01              | `metric=lira_offline_tpr_at_fpr`          | `amulet.membership_inference.attacks.LiRA` + `compute_mi_metrics` in `mia_overlap.py` |
+| MIA AUC                                | `metric=lira_online_auc`                  | same |
+| **C-C2** AIA AUC                       | `auc` column                              | attribute-inference probe (Aalmoes et al. 2025, §5.4); `sklearn.roc_auc_score`, in `aia_image.py` |
+| AIA target / sensitive attribute       | `--target_task` / `--z_attr`              | `face_common.load_celeba` (Smiling/Male), `load_utkface` (sex/race) |
+| **C-C3** DIA distinguishing accuracy  | `metric=meta_acc`                         | logistic-regression meta-classifier on per-subgroup sorted losses in `dia_image.py` (Suri et al. SaTML 2023 black-box; α-ratios per Suri & Evans PETS 2022) |
+| DIA α₁ (victim) vs α₂                  | `--task lo` (α₂=0.1) / `--task hi` (α₂=0.9)| `ALPHA_REF=0.5`, `ALPHA1_LOOKUP` in `dia_image.py` |
+
+The shared collusion knob across all three attacks is the overlap `p`: at `p=0` the adversary's shadow/probe data is disjoint from `D_train`; at `p>0` an overlap-fraction is replaced by reconstructed `D_train` records. C-C1 holds where the moderate-overlap cells exceed baseline (MIA, with the 75% regression discussed in §5.4); C-C2 and C-C3 hold where the bolded cells in §C.5 exceed baseline + std.
 
 ---
 

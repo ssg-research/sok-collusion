@@ -18,6 +18,17 @@ dependencies = [
     # and most reviewer GPUs from the last three years.
     "torch>=2.5.0,<2.6.0",
     "torchvision>=0.20.0,<0.21.0",
+    # Part C (AIA/DIA) only. prep_celeba.py streams the 64x64 CelebA cache from the
+    # HuggingFace "flwrlabs/celeba" dataset; "datasets" is not pulled by amuletml.
+    "datasets>=2.19",
+    # Part C (AIA/DIA) only. GIFD's StyleGAN2 face reconstruction JIT-compiles
+    # two CUDA ops (fused bias-act, upfirdn2d) on first import via
+    # torch.utils.cpp_extension, whose build backend needs setuptools + ninja.
+    # The compile step also needs a system CUDA toolkit (nvcc, on the torch 12.4
+    # line) and a C++ compiler; those are system prerequisites, not pip
+    # packages (see README C.2). MIA needs none of this.
+    "setuptools>=70",
+    "ninja>=1.11",
 ]
 
 [tool.uv]
