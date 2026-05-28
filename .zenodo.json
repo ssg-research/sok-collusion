@@ -1,0 +1,40 @@
+{
+    "title": "Artifact: SoK: Colluding Adversaries in Machine Learning Pipelines",
+    "upload_type": "software",
+    "description": "<p>USENIX Security 2026 artifact for the paper <em>SoK: Colluding Adversaries in Machine Learning Pipelines</em>. Reproduces three empirical studies on unintended interactions between independent attacks against machine-learning models:</p><ul><li><strong>Part A</strong> (paper &sect;5.2, Table 5): data-poisoning vs. model extraction on CIFAR-10/100 &mdash; <em>negative</em> collusion.</li><li><strong>Part B</strong> (paper &sect;5.3, Table 6): model extraction vs. distribution inference on CelebA/UTKFace &mdash; <em>positive</em> collusion.</li><li><strong>Part C</strong> (paper &sect;5.4): data reconstruction (Geiping NeurIPS 2020 gradient inversion) vs. membership, attribute, and distribution inference on CIFAR-10 and CelebA/UTKFace &mdash; <em>positive</em> collusion.</li></ul><p>Targets all three USENIX Security 2026 badges (Artifacts Available, Functional, Results Reproducible). Single locked Python environment (<code>pyproject.toml</code> + <code>uv.lock</code>) pinning <code>amuletml==0.5.1</code>. One <code>setup.sh</code> covers all three parts; each part ships a smoke test (~3-10 min) and a full reproduction script. See <code>README.md</code> for claims, requirements, time budgets, and reference numbers.</p>",
+    "access_right": "open",
+    "license": "MIT",
+    "creators": [
+        {
+            "name": "Duddu, Vasisht",
+            "affiliation": "University of Waterloo",
+            "orcid": "0000-0003-2138-4341"
+        },
+        {
+            "name": "Waheed, Asim",
+            "affiliation": "University of Waterloo",
+            "orcid": "0009-0001-9618-1082"
+        },
+        {
+            "name": "He, Lipeng",
+            "affiliation": "University of Waterloo"
+        },
+        {
+            "name": "Asokan, N.",
+            "affiliation": "University of Waterloo",
+            "orcid": "0000-0002-5093-9871"
+        }
+    ],
+    "keywords": [
+        "machine learning security",
+        "systematization of knowledge",
+        "colluding adversaries",
+        "model extraction",
+        "data poisoning",
+        "membership inference",
+        "attribute inference",
+        "distribution inference",
+        "data reconstruction",
+        "USENIX Security 2026"
+    ]
+}

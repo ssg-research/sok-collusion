@@ -1,0 +1,47 @@
+# Citation metadata for this repository. Read by GitHub's "Cite this
+# repository" button and by Zenodo when the GitHub integration archives a
+# release. The Zenodo record's authoritative fields come from .zenodo.json;
+# this file is the GitHub-side mirror.
+cff-version: 1.2.0
+message: >-
+  If you use this artifact, please cite the accompanying paper (preferred)
+  and/or this software record.
+type: software
+title: "Artifact: SoK: Colluding Adversaries in Machine Learning Pipelines"
+abstract: >-
+  USENIX Security 2026 artifact for the paper "SoK: Colluding Adversaries in
+  Machine Learning Pipelines." Reproduces three empirical studies on
+  unintended interactions between independent ML attacks: (A) poisoning vs.
+  model extraction on CIFAR-10/100, (B) model extraction vs. distribution
+  inference on CelebA/UTKFace, and (C) data reconstruction vs. membership,
+  attribute, and distribution inference. Built on amuletml==0.5.1.
+authors:
+  - family-names: Duddu
+    given-names: Vasisht
+    affiliation: University of Waterloo
+    orcid: "https://orcid.org/0000-0003-2138-4341"
+  - family-names: Waheed
+    given-names: Asim
+    affiliation: University of Waterloo
+    orcid: "https://orcid.org/0009-0001-9618-1082"
+  - family-names: He
+    given-names: Lipeng
+    affiliation: University of Waterloo
+  - family-names: Asokan
+    given-names: N.
+    affiliation: University of Waterloo
+    orcid: "https://orcid.org/0000-0002-5093-9871"
+repository-code: "https://github.com/ssg-research/sok-collusion"
+license: MIT
+version: "1.0.0"
+keywords:
+  - machine learning security
+  - systematization of knowledge
+  - colluding adversaries
+  - model extraction
+  - data poisoning
+  - membership inference
+  - attribute inference
+  - distribution inference
+  - data reconstruction
+  - USENIX Security 2026
