@@ -13,6 +13,9 @@ __pycache__/
 .idea/
 *.swp
 
+# Local notes-to-self (Claude Code, etc.). Not part of the artifact.
+CLAUDE.md
+
 # Result CSVs (we ship only the reference numbers in the README, not the data files)
 *.csv
 
