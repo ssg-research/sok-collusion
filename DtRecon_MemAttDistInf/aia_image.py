@@ -288,7 +288,11 @@ def main():
     device = "cuda"
     recon_dir = Path(args.recon_dir) if args.recon_dir else None
     levels = OVERLAP_LEVELS if args.overlap is None else [args.overlap]
-    csv_path = RESULTS_DIR / args.results_csv
+    # Bare filename -> under results/; an explicit path -> used as given (relative
+    # to CWD). Matches mia_overlap.py so all three attacks resolve --results_csv the
+    # same way and never double-nest results/results/.
+    _csv = Path(args.results_csv)
+    csv_path = _csv if (_csv.is_absolute() or _csv.parent != Path(".")) else RESULTS_DIR / _csv
     task = f"{args.y_attr}->{args.z_attr}" if args.y_attr else ""
 
     for p in levels:

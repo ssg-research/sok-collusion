@@ -1382,21 +1382,26 @@ source = { virtual = "." }
 dependencies = [
     { name = "amuletml" },
     { name = "datasets" },
-    { name = "ninja" },
-    { name = "setuptools" },
     { name = "torch" },
     { name = "torchvision" },
+]
+
+[package.optional-dependencies]
+gifd = [
+    { name = "ninja" },
+    { name = "setuptools" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "amuletml", specifier = "==0.5.1" },
     { name = "datasets", specifier = ">=2.19" },
-    { name = "ninja", specifier = ">=1.11" },
-    { name = "setuptools", specifier = ">=70" },
+    { name = "ninja", marker = "extra == 'gifd'", specifier = ">=1.11" },
+    { name = "setuptools", marker = "extra == 'gifd'", specifier = ">=70" },
     { name = "torch", specifier = ">=2.5.0,<2.6.0" },
     { name = "torchvision", specifier = ">=0.20.0,<0.21.0" },
 ]
+provides-extras = ["gifd"]
 
 [[package]]
 name = "wget"

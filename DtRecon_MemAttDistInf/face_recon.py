@@ -46,7 +46,11 @@ sys.path.insert(0, str(_GIFD / "inversefed" / "genmodels"))
 
 from face_common import get_splits, load_celeba, load_utkface, to_model_input
 from face_targets import build_resnet18_64, load_target
-from stylegan2_io.model import Generator
+
+# The StyleGAN2 generator (from the GIFD checkout) is imported lazily inside main(),
+# only when --method gifd is selected. The default geiping path is GAN-free, so the
+# reproduction (run_all.sh, all --method geiping) needs no GIFD checkout, no
+# StyleGAN2 checkpoint, and no cpp_extension/ninja toolchain.
 
 
 STYLEGAN_CKPT = _GIFD / "inversefed" / "genmodels" / "stylegan2_io" / "stylegan2-ffhq-config-f.pt"
@@ -224,13 +228,23 @@ def main():
     device = "cuda"
     out = Path(args.output_dir); out.mkdir(parents=True, exist_ok=True)
 
-    G = Generator(size=1024, style_dim=512, n_mlp=8).to(device)
-    ckpt = torch.load(STYLEGAN_CKPT, map_location=device, weights_only=False)
-    G.load_state_dict(ckpt["g_ema"], strict=False)
-    G.eval()
-    for p in G.parameters():
-        p.requires_grad_(False)
-    latent_avg = ckpt["latent_avg"].to(device)
+    # The StyleGAN2 prior is only used by --method gifd. Import and build it lazily
+    # so the default geiping path (used by run_all.sh) needs no GIFD checkout, no
+    # StyleGAN2 checkpoint, and no cpp_extension/ninja toolchain. geiping_attack_single
+    # never references G / latent_avg, and torch.manual_seed below re-seeds the RNG,
+    # so skipping this build cannot change any geiping reconstruction.
+    G = None
+    latent_avg = None
+    if args.method == "gifd":
+        from stylegan2_io.model import Generator
+
+        G = Generator(size=1024, style_dim=512, n_mlp=8).to(device)
+        ckpt = torch.load(STYLEGAN_CKPT, map_location=device, weights_only=False)
+        G.load_state_dict(ckpt["g_ema"], strict=False)
+        G.eval()
+        for p in G.parameters():
+            p.requires_grad_(False)
+        latent_avg = ckpt["latent_avg"].to(device)
 
     if args.dataset == "utkface":
         y_attr = args.y_attr or "race"

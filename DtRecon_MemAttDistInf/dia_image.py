@@ -248,7 +248,11 @@ def main():
     recon_dir = Path(args.recon_dir) if args.recon_dir else None
     alpha_off = ALPHA1_LOOKUP[args.task]
     levels = OVERLAP_LEVELS if args.overlap is None else [args.overlap]
-    csv_path = RESULTS_DIR / args.results_csv
+    # Bare filename -> under results/; an explicit path -> used as given (relative
+    # to CWD). Matches mia_overlap.py so all three attacks resolve --results_csv the
+    # same way and never double-nest results/results/.
+    _csv = Path(args.results_csv)
+    csv_path = _csv if (_csv.is_absolute() or _csv.parent != Path(".")) else RESULTS_DIR / _csv
 
     for p in levels:
         result = run_one(args.dataset, alpha_off, p, args.target_seed, args.seed,
