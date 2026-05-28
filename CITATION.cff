@@ -33,7 +33,7 @@ authors:
     orcid: "https://orcid.org/0000-0002-5093-9871"
 repository-code: "https://github.com/ssg-research/sok-collusion"
 license: MIT
-version: "1.0.0"
+version: "1.0.1"
 keywords:
   - machine learning security
   - systematization of knowledge
