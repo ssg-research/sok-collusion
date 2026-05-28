@@ -404,6 +404,6 @@ USENIX requires a ≤3-page LaTeX appendix restating claims, requirements, and t
 
 USENIX's Open-Science policy requires the *Artifacts Available* badge to point at Zenodo, FigShare, Dryad, or Software Heritage (not GitHub). The GitHub repo (paper footnote: <https://github.com/ssg-research/sok-collusion>) is the development mirror.
 
-> **TODO (before Phase-1):** Zenodo DOI `<archive-DOI-here>`. Version-specific DOI of the Phase-1 snapshot; concept DOI added after Phase-2.
+> **Archived at:** Zenodo, concept DOI [10.5281/zenodo.20429235](https://doi.org/10.5281/zenodo.20429235) — resolves to the latest archived version. Specific version DOIs are listed on the Zenodo landing page; the [latest GitHub release](https://github.com/ssg-research/sok-collusion/releases/latest) is the corresponding tag on the GitHub side.
 
 The GitHub mirror and the Zenodo deposit are byte-identical at matching tags.

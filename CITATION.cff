@@ -33,7 +33,11 @@ authors:
     orcid: "https://orcid.org/0000-0002-5093-9871"
 repository-code: "https://github.com/ssg-research/sok-collusion"
 license: MIT
-version: "1.0.1"
+version: "1.0.2"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.20429235"
+    description: "Concept DOI on Zenodo. Resolves to the latest archived version; stable across releases."
 keywords:
   - machine learning security
   - systematization of knowledge
